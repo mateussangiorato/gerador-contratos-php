@@ -69,7 +69,7 @@ if (isset($_POST['print_mode'])) {
         foreach ($voga_plans as $p) if ($p['id'] == $plan_id) $plan = $p;
         $price = $plan ? $plan['price'] : 0;
         $total_contract += $price;
-        $lines_html .= "<tr><td style='border:1px solid #000; padding:4px;'>" . ($idx + 1) . "</td><td style='border:1px solid #000; padding:4px;'>{$line['number']}</td><td style='border:1px solid #000; padding:4px;'>" . ($plan ? $plan['provider'] : '---') . "</td><td style='border:1px solid #000; padding:4px;'>R$ " . number_format($price, 2, ',', '.') . "</td></tr>";
+        $lines_html .= "<tr><td>" . ($idx + 1) . "</td><td>{$line['number']}</td><td>" . ($plan ? $plan['provider'] : '---') . "</td><td>R$ " . number_format($price, 2, ',', '.') . "</td></tr>";
     }
 
     $fidelity_text = $fidelity == 'none' ? 'Sem Fidelidade' : "$fidelity meses";
@@ -82,22 +82,23 @@ if (isset($_POST['print_mode'])) {
         <title>Contrato Voga - <?php echo $client_data['clientName']; ?></title>
         <style>
             @media print { .no-print { display: none; } body { background: white; padding: 0; } .page-break { page-break-before: always; } }
-            body { font-family: Arial, sans-serif; line-height: 1.3; color: #000; font-size: 11px; margin: 0; padding: 20px; }
-            .container { max-width: 800px; margin: auto; background: white; padding: 40px; }
-            h1 { font-size: 16px; text-align: center; text-decoration: underline; margin-bottom: 20px; }
-            h2 { font-size: 14px; text-align: center; text-decoration: underline; margin-top: 30px; margin-bottom: 15px; }
-            .section-title { font-weight: bold; text-decoration: underline; margin-top: 15px; margin-bottom: 5px; display: block; }
-            .data-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #000; padding: 5px; text-align: left; }
-            .footer-sig { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; }
-            .sig-line { border-top: 1px solid #000; width: 45%; padding-top: 5px; }
-            .red-text { color: #e11d48; font-weight: bold; }
+            body { font-family: Arial, sans-serif; line-height: 1.4; color: #000; font-size: 10px; margin: 0; padding: 0; }
+            .container { max-width: 800px; margin: auto; padding: 40px; }
+            h1 { font-size: 12px; text-align: center; text-decoration: underline; margin-bottom: 20px; font-weight: bold; }
+            h2 { font-size: 11px; text-align: center; text-decoration: underline; margin-top: 30px; margin-bottom: 15px; font-weight: bold; }
+            .section-title { font-weight: bold; text-decoration: underline; margin-top: 15px; margin-bottom: 5px; display: block; font-size: 10px; }
+            .data-box { border: 1px solid #000; padding: 8px; margin-bottom: 15px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+            th, td { border: 1px solid #000; padding: 4px; text-align: left; }
+            th { font-weight: bold; }
+            .footer-sig { margin-top: 40px; display: flex; justify-content: space-between; text-align: center; gap: 20px; }
+            .sig-line { border-top: 1px solid #000; width: 48%; padding-top: 5px; font-size: 9px; }
+            p { margin: 5px 0; }
         </style>
     </head>
     <body>
         <div class="no-print" style="position: fixed; top: 10px; right: 10px; z-index: 100;">
-            <button onclick="window.print()" style="background: #e11d48; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">SALVAR COMO PDF</button>
+            <button onclick="window.print()" style="background: #000; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold;">SALVAR COMO PDF</button>
         </div>
 
         <div class="container">
@@ -118,14 +119,14 @@ if (isset($_POST['print_mode'])) {
 
             <div class="section-title">LINHAS E PLANOS:</div>
             <table>
-                <thead><tr style="background:#f3f4f6;"><th>#</th><th>Número</th><th>Plano</th><th>Valor</th></tr></thead>
+                <thead><tr><th>#</th><th>Número</th><th>Plano</th><th>Valor</th></tr></thead>
                 <tbody><?php echo $lines_html; ?></tbody>
             </table>
 
             <div style="margin-top: 15px;">
                 <p><strong>Observações:</strong> <?php echo $obs ?: '---'; ?></p>
                 <p><strong>Fidelidade:</strong> <?php echo $fidelity_text; ?></p>
-                <p style="font-size: 14px; font-weight: bold; margin-top: 10px;">VALOR TOTAL DO CONTRATO: R$ <?php echo number_format($total_contract, 2, ',', '.'); ?></p>
+                <p style="font-size: 11px; font-weight: bold; margin-top: 10px;">VALOR TOTAL DO CONTRATO: R$ <?php echo number_format($total_contract, 2, ',', '.'); ?></p>
             </div>
 
             <!-- PÁGINA 2 -->
@@ -134,7 +135,7 @@ if (isset($_POST['print_mode'])) {
                 <p><strong>CONTRATANTE:</strong> VOGA INOVAÇÕES TECNOLÓGICA LTDA</p>
                 <p><strong>CLIENTE:</strong> <?php echo $client_data['clientName']; ?></p>
                 
-                <p style="margin-top: 15px; text-align: justify;">Este contrato explica como funcionam os serviços da Voga e estabelece seus direitos e deveres como CLIENTE. Nosso compromisso é ser claro, transparente e eficiente.</p>
+                <p style="margin-top: 10px; text-align: justify;">Este contrato explica como funcionam os serviços da Voga e estabelece seus direitos e deveres como CLIENTE. Nosso compromisso é ser claro, transparente e eficiente.</p>
                 
                 <div class="section-title">1. OBJETO</div>
                 <p>1.1. Este contrato trata da prestação de serviços de telefonia móvel (SMP), que podem incluir: Ligações (voz); Internet móvel (dados); Mensagens de texto (SMS); Tudo conforme o plano escolhido no Termo de Adesão.</p>
@@ -155,10 +156,10 @@ if (isset($_POST['print_mode'])) {
                 </div>
             </div>
             
-            <!-- PÁGINA 3 EM DIANTE (RESUMO DAS CLÁUSULAS) -->
+            <!-- PÁGINA 3 -->
             <div class="page-break">
                 <div class="section-title">DADOS DA EMPRESA PRESTADORA DE ORIGEM</div>
-                <div class="data-box" style="font-size: 9px;">
+                <div class="data-box" style="font-size: 8px;">
                     <?php if($operator == 'TIM'): ?>
                     <strong>Nome Empresarial:</strong> SURF TELECOM | <strong>CNPJ:</strong> 10.455.746/0004-96<br>
                     <strong>Endereço:</strong> AV. MAGALHÃES DE CASTRO, n°. 4800, CONJ 161. CIDADE JARDIM, SÃO PAULO/SP.
@@ -170,10 +171,12 @@ if (isset($_POST['print_mode'])) {
                 
                 <div class="section-title">ANEXO I – SLA DETALHADO</div>
                 <table>
-                    <tr style="background:#f3f4f6;"><th>Severidade</th><th>Definição</th><th>Resposta</th><th>Solução</th></tr>
-                    <tr><td>Alta</td><td>Indisponibilidade total</td><td>Até 1h</td><td>Até 9h</td></tr>
-                    <tr><td>Média</td><td>Degradação parcial</td><td>Até 4h</td><td>Até 36h</td></tr>
-                    <tr><td>Baixa</td><td>Impacto leve</td><td>Até 48h</td><td>Até 120h</td></tr>
+                    <thead><tr><th>Severidade</th><th>Definição</th><th>Resposta</th><th>Solução</th></tr></thead>
+                    <tbody>
+                        <tr><td>Alta</td><td>Indisponibilidade total</td><td>Até 1h</td><td>Até 9h</td></tr>
+                        <tr><td>Média</td><td>Degradação parcial</td><td>Até 4h</td><td>Até 36h</td></tr>
+                        <tr><td>Baixa</td><td>Impacto leve</td><td>Até 48h</td><td>Até 120h</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -222,7 +225,7 @@ if (isset($_POST['print_mode'])) {
                 <div class="lg:col-span-1 space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                            <span class="w-2 h-6 bg-rose-600 rounded-full"></span> Dados do Cliente
+                            <span class="w-2 h-6 bg-black rounded-full"></span> Dados do Cliente
                         </h3>
                         <div class="space-y-3 text-sm">
                             <p><span class="text-slate-500 font-bold">Nome:</span><br><input type="text" name="dummy_name" value="<?php echo $extracted_data['clientName']; ?>" class="w-full border-none p-0 font-bold focus:ring-0"></p>
@@ -251,7 +254,7 @@ if (isset($_POST['print_mode'])) {
                             <label class="block text-sm font-medium text-slate-700 mb-1">Observações</label>
                             <textarea name="commercial_terms" class="w-full border-slate-300 rounded-lg text-sm" rows="2" placeholder="Ex: Isenção de taxa de ativação..."></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-xl font-bold hover:bg-rose-700 shadow-lg transition-all flex items-center justify-center gap-2">
+                        <button type="submit" class="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-slate-800 shadow-lg transition-all flex items-center justify-center gap-2">
                             GERAR CONTRATO PDF
                         </button>
                         <a href="index.php" class="block text-center text-sm text-slate-500 hover:underline">Limpar e carregar outro</a>
@@ -282,14 +285,14 @@ if (isset($_POST['print_mode'])) {
                                             <?php endforeach; ?>
                                         </select>
                                     </td>
-                                    <td class="p-4 text-sm font-bold text-rose-600 text-right line-price">R$ 0,00</td>
+                                    <td class="p-4 text-sm font-bold text-black text-right line-price">R$ 0,00</td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
-                            <tfoot class="bg-rose-50">
+                            <tfoot class="bg-slate-50">
                                 <tr>
-                                    <td colspan="2" class="p-4 text-sm font-bold text-rose-900 text-right uppercase">Total Mensal:</td>
-                                    <td id="grandTotal" class="p-4 text-lg font-black text-rose-900 text-right">R$ 0,00</td>
+                                    <td colspan="2" class="p-4 text-sm font-bold text-slate-900 text-right uppercase">Total Mensal:</td>
+                                    <td id="grandTotal" class="p-4 text-lg font-black text-slate-900 text-right">R$ 0,00</td>
                                 </tr>
                             </tfoot>
                         </table>
