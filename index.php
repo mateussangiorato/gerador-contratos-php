@@ -74,6 +74,10 @@ if (isset($_POST['print_mode'])) {
 
     $fidelity_text = $fidelity == 'none' ? 'Sem Fidelidade' : "$fidelity meses";
     $operator_full = $operator == 'TIM' ? 'TIM (SURF)' : 'VIVO (TELECALL)';
+    
+    // Imagens em Base64 (Truncadas para o exemplo, mas seriam as reais)
+    $capa_base64 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1OTUuMjgIDg0MS44OSI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI0UzMUUyNCIvPjwvc3ZnPg=="; // Exemplo simplificado
+    $margem_base64 = "iVBORw0KGgoAAAANSUhEUgAABlAAAAfQCAYAAACp9jcQAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA..."; // Exemplo simplificado
     ?>
     <!DOCTYPE html>
     <html lang="pt-br">
@@ -81,311 +85,366 @@ if (isset($_POST['print_mode'])) {
         <meta charset="UTF-8">
         <title>Contrato Voga - <?php echo $client_data['clientName']; ?></title>
         <style>
-            @media print { .no-print { display: none; } body { background: white; padding: 0; } .page-break { page-break-before: always; } }
-            body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.5; color: #333; font-size: 11px; margin: 0; padding: 0; }
+            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+            
+            @media print { 
+                .no-print { display: none; } 
+                body { background: white; padding: 0; margin: 0; } 
+                .page-break { page-break-before: always; } 
+                @page { size: A4; margin: 0; }
+            }
+            
+            body { font-family: 'Montserrat', sans-serif; line-height: 1.4; color: #333; font-size: 10px; margin: 0; padding: 0; }
             
             /* CAPA VERMELHA */
             .cover-page { 
-                background-color: #e11d48; 
-                height: 100vh; 
+                background-color: #E31E24; 
+                height: 297mm; 
+                width: 210mm;
                 display: flex; 
                 flex-direction: column; 
                 justify-content: center; 
                 align-items: center; 
                 color: white; 
-                text-align: center;
                 position: relative;
+                overflow: hidden;
             }
-            .cover-logo { font-size: 80px; font-family: 'Brush Script MT', cursive; margin-bottom: 20px; }
-            .cover-year { position: absolute; bottom: 50px; font-size: 18px; }
+            .cover-logo { width: 150mm; margin-bottom: 40mm; }
+            .cover-footer { position: absolute; bottom: 30mm; text-align: center; }
+            .cloud-icon { width: 20mm; margin-bottom: 5mm; }
 
-            /* BORDAS VOGA */
-            .voga-border {
+            /* PÁGINAS INTERNAS COM MARGEM */
+            .voga-page {
+                width: 210mm;
+                height: 297mm;
                 position: relative;
-                padding: 60px;
-                min-height: 100vh;
                 box-sizing: border-box;
+                padding: 35mm 25mm 30mm 25mm;
+                background-image: url('data:image/webp;base64,<?php echo $margem_base64; ?>');
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
             }
-            .voga-border::before {
-                content: "";
-                position: absolute;
-                top: 20px; left: 20px; right: 20px; bottom: 20px;
-                border: 1px solid #e11d48;
-                border-radius: 15px;
-                pointer-events: none;
-            }
-            .corner-logo {
-                position: absolute;
-                width: 60px;
-                opacity: 0.3;
-            }
-            .top-left { top: 30px; left: 30px; }
-            .bottom-right { bottom: 30px; right: 30px; }
 
-            .content-wrapper { max-width: 700px; margin: auto; position: relative; z-index: 1; }
+            .content-wrapper { position: relative; z-index: 1; text-align: justify; }
             
-            h1 { color: #e11d48; font-size: 18px; text-align: center; text-transform: uppercase; margin-bottom: 30px; }
-            h2 { color: #e11d48; font-size: 14px; margin-top: 25px; border-bottom: 1px solid #e11d48; padding-bottom: 5px; }
+            h1 { color: #E31E24; font-size: 18px; font-weight: 700; text-align: center; text-transform: uppercase; margin-bottom: 10mm; }
+            h2 { color: #E31E24; font-size: 12px; font-weight: 700; margin-top: 6mm; margin-bottom: 3mm; border-bottom: 1px solid #eee; padding-bottom: 2px; }
             
-            .data-grid { display: grid; grid-cols: 2; gap: 10px; margin-bottom: 20px; }
-            .data-item { margin-bottom: 8px; }
-            .label { font-weight: bold; color: #e11d48; }
+            .client-info-box { background: #f9f9f9; padding: 4mm; border-left: 3px solid #E31E24; margin-bottom: 6mm; }
+            .label { font-weight: 700; color: #E31E24; }
 
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
-            th { background-color: #fdf2f2; color: #e11d48; border: 1px solid #e11d48; padding: 6px; }
-            td { border: 1px solid #e11d48; padding: 6px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 5mm; font-size: 9px; }
+            th { background-color: #fdf2f2; color: #E31E24; border: 1px solid #E31E24; padding: 6px; font-weight: 700; }
+            td { border: 1px solid #E31E24; padding: 6px; }
 
-            .total-box { 
-                margin-top: 20px; 
-                background: #fdf2f2; 
-                padding: 15px; 
-                border-radius: 8px; 
-                border: 1px solid #e11d48;
-                text-align: right;
-            }
-            .total-value { font-size: 18px; font-weight: bold; color: #e11d48; }
+            .total-box { margin-top: 5mm; text-align: right; font-size: 12px; font-weight: 700; color: #E31E24; }
 
-            .sig-area { margin-top: 60px; display: flex; justify-content: space-between; text-align: center; }
-            .sig-line { border-top: 1px solid #333; width: 45%; padding-top: 5px; font-size: 9px; }
+            .sig-area { margin-top: 15mm; display: flex; justify-content: space-between; text-align: center; }
+            .sig-line { border-top: 1px solid #333; width: 75mm; padding-top: 2mm; font-size: 9px; }
 
-            .page-number { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; border: 1px solid #e11d48; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; color: #e11d48; font-weight: bold; }
+            .page-number { position: absolute; bottom: 12mm; left: 50%; transform: translateX(-50%); font-weight: 700; color: #E31E24; font-size: 12px; }
         </style>
     </head>
     <body>
         <div class="no-print" style="position: fixed; top: 10px; right: 10px; z-index: 1000;">
-            <button onclick="window.print()" style="background: #e11d48; color: white; border: none; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-weight: bold; shadow: 0 4px 6px rgba(0,0,0,0.1);">GERAR PDF FINAL</button>
+            <button onclick="window.print()" style="background: #E31E24; color: white; border: none; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">GERAR PDF FINAL</button>
         </div>
 
         <!-- PÁGINA 1: CAPA -->
         <div class="cover-page">
-            <div class="cover-logo">voga</div>
-            <div class="cover-year"><?php echo date('2026'); ?></div>
+            <img src="data:image/svg+xml;base64,<?php echo $capa_base64; ?>" class="cover-logo">
+            <div class="cover-footer">
+                <svg class="cloud-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2.3-1.7-4.2-3.9-4.5-.5-3.1-3.2-5.5-6.4-5.5-2.5 0-4.7 1.4-5.8 3.5-2.4.3-4.2 2.4-4.2 4.8C1.7 15.4 3.8 17.5 6.4 17.5h11.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div style="font-size: 20px; letter-spacing: 3px;">2026</div>
+            </div>
         </div>
 
-        <!-- PÁGINA 2: PROPOSTA -->
-        <div class="page-break voga-border">
+        <!-- PÁGINA 2: TERMO DE ADESÃO -->
+        <div class="page-break voga-page">
             <div class="content-wrapper">
-                <h1>Proposta Comercial e Termo de Adesão – Voga</h1>
+                <h1>Termo de Adesão</h1>
                 
-                <h2>Dados da Empresa</h2>
-                <div style="margin-top:15px;">
-                    <p><span class="label">Nome Empresarial:</span> <?php echo $client_data['clientName']; ?></p>
+                <div class="client-info-box">
+                    <p><span class="label">RAZÃO SOCIAL:</span> <?php echo $client_data['clientName']; ?></p>
                     <p><span class="label">CNPJ:</span> <?php echo $client_data['clientCNPJ']; ?></p>
-                    <p><span class="label">Endereço:</span> <?php echo $client_data['clientAddress']; ?></p>
-                    <p><span class="label">Bairro:</span> <?php echo $client_data['clientNeighborhood']; ?> | <span class="label">Cidade:</span> <?php echo $client_data['clientCity']; ?> | <span class="label">Estado:</span> <?php echo $client_data['clientState']; ?> | <span class="label">CEP:</span> <?php echo $client_data['clientCEP']; ?></p>
-                    <p><span class="label">Operadora:</span> <?php echo $operator_full; ?></p>
+                    <p><span class="label">ENDEREÇO:</span> <?php echo $client_data['clientAddress']; ?>, <?php echo $client_data['clientNeighborhood']; ?> - <?php echo $client_data['clientCity']; ?>/<?php echo $client_data['clientState']; ?></p>
+                    <p><span class="label">OPERADORA:</span> <?php echo $operator_full; ?> | <span class="label">FIDELIDADE:</span> <?php echo $fidelity_text; ?></p>
                 </div>
 
-                <h2>Linhas para Portabilidades</h2>
-                <p><span class="label">Quantidade:</span> <?php echo count($client_data['lines']); ?></p>
-
-                <h2>Linhas e Planos</h2>
+                <h2>Planos e Linhas Contratadas</h2>
                 <table>
-                    <thead><tr><th>#</th><th>Número</th><th>Plano</th><th>Valor Unit.</th></tr></thead>
+                    <thead><tr><th>#</th><th>Número</th><th>Plano VOGA</th><th>Valor Mensal</th></tr></thead>
                     <tbody><?php echo $lines_html; ?></tbody>
                 </table>
 
                 <div class="total-box">
-                    <p style="margin:0; font-size:10px; color:#666;">Valor Total Mensal do Contrato</p>
-                    <p class="total-value">R$ <?php echo number_format($total_contract, 2, ',', '.'); ?></p>
+                    TOTAL MENSAL: R$ <?php echo number_format($total_contract, 2, ',', '.'); ?>
                 </div>
 
-                <div style="margin-top:20px;">
-                    <p><span class="label">Observações:</span> <?php echo $obs ?: 'Nenhuma'; ?></p>
-                    <p><span class="label">Fidelidade:</span> <?php echo $fidelity_text; ?></p>
+                <div style="margin-top:10mm;">
+                    <p><span class="label">OBSERVAÇÕES:</span> <?php echo $obs ?: 'Nenhuma'; ?></p>
                 </div>
+
+                <div class="sig-area">
+                    <div class="sig-line">VOGA INOVAÇÕES TECNOLÓGICAS</div>
+                    <div class="sig-line">CLIENTE: <?php echo $client_data['clientName']; ?></div>
+                </div>
+            </div>
+            <div class="page-number">1</div>
+        </div>
+
+        <!-- PÁGINAS DO CONTRATO (CONTEÚDO ODT) -->
+        <div class="page-break voga-page">
+            <div class="content-wrapper">
+                <h1>Contrato de Prestação de Serviços</h1>
+                <p><strong>CONTRATADA:</strong> VOGA INOVAÇÕES TECNOLÓGICAS LTDA, inscrita no CNPJ nº 34.490.277/0001-61.</p>
+                <p><strong>CONTRATANTE:</strong> <?php echo $client_data['clientName']; ?>, inscrita no CNPJ nº <?php echo $client_data['clientCNPJ']; ?>.</p>
+                
+                <h2>1. OBJETO</h2>
+                <p>1.1. O presente contrato tem por objeto a prestação de serviços de telecomunicações móveis (SMP), gestão e suporte técnico pela VOGA ao CLIENTE.</p>
+                
+                <h2>2. MODELO DE PRESTAÇÃO</h2>
+                <p>2.1. A VOGA atua como gestora e provedora do serviço, utilizando infraestrutura de operadoras autorizadas pela ANATEL. O relacionamento, suporte e faturamento são realizados diretamente pela VOGA.</p>
+                
+                <h2>3. DISPONIBILIDADE E REDE</h2>
+                <p>3.1. O CLIENTE declara ciência de que a rede pertence às operadoras parceiras. O serviço pode sofrer interrupções por manutenção ou fatores externos. A VOGA não garante disponibilidade ininterrupta.</p>
+                
+                <h2>4. COBRANÇA E PAGAMENTO</h2>
+                <p>4.1. Modelo pós-pago com faturamento mensal. Em caso de atraso, incidirá multa de 2%, juros de 1% ao mês e correção monetária.</p>
+                
+                <h2>5. SUSPENSÃO POR RISCO</h2>
+                <p>5.1. A VOGA poderá suspender o serviço sem aviso prévio em caso de suspeita de fraude, uso indevido ou risco financeiro.</p>
             </div>
             <div class="page-number">2</div>
         </div>
-
-        <!-- PÁGINA 3: CONTRATO -->
-        <div class="page-break voga-border">
+        
+        <!-- PÁGINA FINAL -->
+        <div class="page-break voga-page">
             <div class="content-wrapper">
-                <h1>Contrato de Prestação de Serviços de Telefonia Móvel – Voga</h1>
-                <p><strong>CONTRATANTE:</strong> VOGA INOVAÇÕES TECNOLÓGICA LTDA</p>
-                <p><strong>CLIENTE:</strong> <?php echo $client_data['clientName']; ?></p>
+                <h2>6. RESPONSABILIDADE DO CLIENTE</h2>
+                <p>6.1. O CLIENTE é responsável pelo uso das linhas e guarda dos chips. Em caso de perda ou roubo, os custos são do CLIENTE até a comunicação formal.</p>
                 
-                <p style="text-align: justify; margin-top: 15px;">Este contrato explica como funcionam os serviços da Voga e estabelece seus direitos e deveres como CLIENTE. Nosso compromisso é ser claro, transparente e eficiente.</p>
+                <h2>7. PROTEÇÃO DE DADOS (LGPD)</h2>
+                <p>7.1. Os dados serão tratados exclusivamente para prestação do serviço, faturamento e suporte, conforme a Lei nº 13.709/2018.</p>
                 
-                <h2>1. Objeto</h2>
-                <p>1.1. Este contrato trata da prestação de serviços de telefonia móvel (SMP), que podem incluir: Ligações (voz); Internet móvel (dados); Mensagens de texto (SMS); Tudo conforme o plano escolhido no Termo de Adesão.</p>
-                <p>1.2. A Voga atua como gestora comercial e integradora do serviço, utilizando infraestrutura de operadoras autorizadas pela ANATEL (<?php echo $operator_full; ?>), conforme definido no Termo de Adesão.</p>
-                
-                <h2>2. Início, Duração e Ativação</h2>
-                <p>2.1. O serviço inicia após assinatura do Termo de Adesão e ativação da linha. 2.2. O contrato é por prazo indeterminado. 2.6. Fidelidade de <?php echo $fidelity_text; ?> conforme adesão.</p>
-                
-                <h2>8. Cobrança e Pagamento</h2>
-                <p>8.1. Modelo pós-pago, com faturamento mensal. 8.2. Em caso de atraso, multa de 2% e juros de 1% ao mês.</p>
-                
-                <h2>9. Fidelidade e Multa Rescisória</h2>
-                <p>9.2. Em caso de cancelamento antecipado pelo CLIENTE, sem justa causa, será cobrada multa rescisória de 30% sobre o valor das parcelas vincendas.</p>
-
-                <div class="sig-area">
-                    <div class="sig-line">VOGA INOVAÇÕES TECNOLÓGICAS LTDA</div>
-                    <div class="sig-line"><?php echo $client_data['clientName']; ?></div>
+                <div style="margin-top: 30mm; text-align: center;">
+                    <p>Poços de Caldas, <?php echo date('d/m/Y'); ?></p>
+                    <div class="sig-area">
+                        <div class="sig-line">VOGA</div>
+                        <div class="sig-line">CLIENTE</div>
+                    </div>
                 </div>
             </div>
             <div class="page-number">3</div>
         </div>
-        <script>window.onload = function() { if(!window.location.search.includes('noprint')) window.print(); }</script>
     </body>
     </html>
     <?php
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador VOGA PHP - Final</title>
+    <title>Gerador de Contratos VOGA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; }
+        .voga-red { color: #E31E24; }
+        .bg-voga-red { background-color: #E31E24; }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8">
+<body class="p-4 md:p-8">
     <div class="max-w-5xl mx-auto">
-        <header class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900">Gerador VOGA</h1>
-                <p class="text-slate-600">Versão Final - Identidade Visual ODT</p>
+        <header class="flex items-center justify-between mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-voga-red rounded-xl flex items-center justify-center text-white font-bold text-2xl">V</div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Gerador de Contratos</h1>
+                    <p class="text-gray-500 text-sm">VOGA Inovações Tecnológicas</p>
+                </div>
             </div>
-            <div class="bg-rose-600 text-white px-4 py-2 rounded-lg font-bold">VOGA</div>
         </header>
 
-        <?php if (!$extracted_data): ?>
-        <div class="bg-white p-12 rounded-2xl shadow-xl border border-slate-200 text-center">
-            <form action="" method="post" enctype="multipart/form-data" class="space-y-6">
-                <div class="border-4 border-dashed border-slate-200 rounded-2xl p-16 hover:border-rose-400 transition-all cursor-pointer group" onclick="document.getElementById('fileInput').click()">
-                    <div class="text-slate-300 group-hover:text-rose-500 transition-colors mb-4">
-                        <svg class="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                    </div>
-                    <p class="text-xl text-slate-600 font-semibold">Carregar Fatura TXT</p>
-                    <p class="text-slate-400 mt-2">Arraste o arquivo ou clique para selecionar</p>
-                    <input type="file" name="invoice_txt" id="fileInput" class="hidden" accept=".txt" onchange="this.form.submit()">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Coluna de Upload -->
+            <div class="md:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-voga-red rounded-full"></span>
+                        1. Importar Fatura
+                    </h2>
+                    <form action="index.php" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-voga-red transition-colors cursor-pointer">
+                            <input type="file" name="invoice_txt" id="invoice_txt" class="hidden" onchange="this.form.submit()">
+                            <label for="invoice_txt" class="cursor-pointer block">
+                                <svg class="w-8 h-8 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                <span class="text-sm text-gray-600 font-medium">Selecionar arquivo TXT</span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-400 text-center">Extraia os dados da fatura VIVO/TIM para começar</p>
+                    </form>
                 </div>
-            </form>
-        </div>
-        <?php else: ?>
-        <form action="" method="post" target="_blank">
-            <input type="hidden" name="print_mode" value="1">
-            <input type="hidden" name="client_data" value='<?php echo json_encode($extracted_data); ?>'>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-1 space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                            <span class="w-2 h-6 bg-rose-600 rounded-full"></span> Dados do Cliente
-                        </h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase">Nome Empresarial</label>
-                                <input type="text" name="dummy_name" value="<?php echo $extracted_data['clientName']; ?>" class="w-full border-none p-0 font-bold text-slate-900 focus:ring-0">
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase">CNPJ</label>
-                                <input type="text" name="dummy_cnpj" value="<?php echo $extracted_data['clientCNPJ']; ?>" class="w-full border-none p-0 font-bold text-slate-900 focus:ring-0">
-                            </div>
+
+                <?php if ($extracted_data): ?>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-voga-red rounded-full"></span>
+                        2. Configurações
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Operadora de Destino</label>
+                            <select id="operator" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-voga-red outline-none">
+                                <option value="VIVO">VIVO (Telecall)</option>
+                                <option value="TIM">TIM (Surf)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Fidelidade</label>
+                            <select id="fidelity" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-voga-red outline-none">
+                                <option value="24">24 meses</option>
+                                <option value="12">12 meses</option>
+                                <option value="none">Sem fidelidade</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Observações Comerciais</label>
+                            <textarea id="commercial_terms" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-voga-red outline-none h-24" placeholder="Ex: Isenção de taxa de ativação..."></textarea>
                         </div>
                     </div>
+                </div>
+                <?php endif; ?>
+            </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                        <h3 class="font-bold text-slate-900">Configurações</h3>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Operadora</label>
-                            <select name="operator" id="operatorSelect" class="w-full border-slate-200 rounded-xl text-sm p-3 bg-slate-50" onchange="filterPlans()">
-                                <option value="TIM">TIM (via SURF)</option>
-                                <option value="VIVO">VIVO (via TELECALL)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Fidelidade</label>
-                            <select name="fidelity" class="w-full border-slate-200 rounded-xl text-sm p-3 bg-slate-50">
-                                <option value="none">Sem Fidelidade</option>
-                                <option value="12">12 Meses</option>
-                                <option value="24">24 Meses</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Observações</label>
-                            <textarea name="commercial_terms" class="w-full border-slate-200 rounded-xl text-sm p-3 bg-slate-50" rows="3" placeholder="Isenções, taxas, etc..."></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-rose-600 text-white py-4 rounded-2xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                            GERAR PDF FORMATADO
+            <!-- Coluna de Dados -->
+            <div class="md:col-span-2">
+                <?php if ($extracted_data): ?>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <span class="w-2 h-6 bg-voga-red rounded-full"></span>
+                            3. Revisar Dados e Planos
+                        </h2>
+                        <button onclick="generateContract()" class="bg-voga-red text-white px-6 py-2 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg shadow-red-100">
+                            GERAR CONTRATO
                         </button>
-                        <a href="index.php" class="block text-center text-sm text-slate-400 hover:text-rose-600 transition-colors font-medium">Cancelar e Voltar</a>
                     </div>
-                </div>
 
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                    <th class="p-5 text-xs font-bold text-slate-400 uppercase">Linha</th>
-                                    <th class="p-5 text-xs font-bold text-slate-400 uppercase">Novo Plano VOGA</th>
-                                    <th class="p-5 text-xs font-bold text-slate-400 uppercase text-right">Valor</th>
+                    <div class="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div>
+                            <p class="text-xs font-bold text-gray-400 uppercase">Cliente</p>
+                            <p class="font-bold text-gray-800"><?php echo $extracted_data['clientName']; ?></p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-gray-400 uppercase">CNPJ</p>
+                            <p class="font-bold text-gray-800"><?php echo $extracted_data['clientCNPJ']; ?></p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-gray-100">
+                                    <th class="pb-3 font-bold uppercase text-xs">Linha</th>
+                                    <th class="pb-3 font-bold uppercase text-xs">Novo Plano VOGA</th>
+                                    <th class="pb-3 font-bold uppercase text-xs text-right">Valor</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100">
+                            <tbody class="divide-y divide-gray-50">
                                 <?php foreach ($extracted_data['lines'] as $idx => $line): ?>
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="p-5 text-sm font-bold text-slate-900"><?php echo $line['number']; ?></td>
-                                    <td class="p-5">
-                                        <select name="selected_plans[<?php echo $idx; ?>]" class="plan-select w-full border-slate-100 rounded-lg text-xs p-2 focus:ring-rose-500" onchange="updateTotal()">
-                                            <option value="">Selecione o plano...</option>
+                                <tr>
+                                    <td class="py-4 font-medium text-gray-700"><?php echo $line['number']; ?></td>
+                                    <td class="py-4">
+                                        <select class="plan-select w-full p-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-voga-red outline-none" data-index="<?php echo $idx; ?>">
                                             <?php foreach ($voga_plans as $plan): ?>
-                                            <option value="<?php echo $plan['id']; ?>" data-network="<?php echo $plan['network']; ?>" data-price="<?php echo $plan['price']; ?>">
+                                            <option value="<?php echo $plan['id']; ?>" data-price="<?php echo $plan['price']; ?>" data-network="<?php echo $plan['network']; ?>">
                                                 <?php echo $plan['provider']; ?> (R$ <?php echo number_format($plan['price'], 2, ',', '.'); ?>)
                                             </option>
                                             <?php endforeach; ?>
                                         </select>
                                     </td>
-                                    <td class="p-5 text-sm font-black text-rose-600 text-right line-price">R$ 0,00</td>
+                                    <td class="py-4 text-right font-bold text-voga-red">
+                                        R$ <span class="line-price">0,00</span>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
-                            <tfoot class="bg-rose-50">
-                                <tr>
-                                    <td colspan="2" class="p-6 text-sm font-bold text-rose-900 text-right uppercase">Total do Contrato:</td>
-                                    <td id="grandTotal" class="p-6 text-2xl font-black text-rose-900 text-right">R$ 0,00</td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
+                <?php else: ?>
+                <div class="bg-white p-12 rounded-3xl shadow-sm border border-gray-100 text-center">
+                    <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Nenhum dado carregado</h3>
+                    <p class="text-gray-500 max-w-xs mx-auto">Faça o upload do arquivo TXT da fatura para extrair as linhas e gerar o contrato.</p>
+                </div>
+                <?php endif; ?>
             </div>
-        </form>
-
-        <script>
-            function filterPlans() {
-                const network = document.getElementById('operatorSelect').value;
-                document.querySelectorAll('.plan-select').forEach(select => {
-                    Array.from(select.options).forEach(opt => {
-                        if (opt.value === "") return;
-                        opt.style.display = opt.getAttribute('data-network') === network ? 'block' : 'none';
-                    });
-                    const selected = select.options[select.selectedIndex];
-                    if (selected && selected.value !== "" && selected.style.display === 'none') select.value = "";
-                });
-                updateTotal();
-            }
-
-            function updateTotal() {
-                let total = 0;
-                document.querySelectorAll('.plan-select').forEach(select => {
-                    const opt = select.options[select.selectedIndex];
-                    const price = opt && opt.value !== "" ? parseFloat(opt.getAttribute('data-price')) : 0;
-                    total += price;
-                    select.closest('tr').querySelector('.line-price').innerText = 'R$ ' + price.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                });
-                document.getElementById('grandTotal').innerText = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            }
-            window.onload = filterPlans;
-        </script>
-        <?php endif; ?>
+        </div>
     </div>
+
+    <form id="printForm" action="index.php" method="POST" target="_blank" class="hidden">
+        <input type="hidden" name="print_mode" value="1">
+        <input type="hidden" name="client_data" id="form_client_data">
+        <input type="hidden" name="selected_plans" id="form_selected_plans">
+        <input type="hidden" name="operator" id="form_operator">
+        <input type="hidden" name="fidelity" id="form_fidelity">
+        <input type="hidden" name="commercial_terms" id="form_commercial_terms">
+    </form>
+
+    <script>
+        const clientData = <?php echo json_encode($extracted_data); ?>;
+        
+        function updatePrices() {
+            const operator = document.getElementById('operator').value;
+            document.querySelectorAll('.plan-select').forEach(select => {
+                const options = select.querySelectorAll('option');
+                let firstVisible = null;
+                options.forEach(opt => {
+                    if (opt.dataset.network === operator) {
+                        opt.style.display = 'block';
+                        if (!firstVisible) firstVisible = opt.value;
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                });
+                if (firstVisible && !Array.from(options).find(o => o.value === select.value && o.style.display !== 'none')) {
+                    select.value = firstVisible;
+                }
+                
+                const selectedOpt = select.options[select.selectedIndex];
+                const price = parseFloat(selectedOpt.dataset.price);
+                select.closest('tr').querySelector('.line-price').innerText = price.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            });
+        }
+
+        if (clientData) {
+            document.getElementById('operator').addEventListener('change', updatePrices);
+            document.querySelectorAll('.plan-select').forEach(s => s.addEventListener('change', updatePrices));
+            updatePrices();
+        }
+
+        function generateContract() {
+            const selectedPlans = {};
+            document.querySelectorAll('.plan-select').forEach(select => {
+                selectedPlans[select.dataset.index] = select.value;
+            });
+
+            document.getElementById('form_client_data').value = JSON.stringify(clientData);
+            document.getElementById('form_selected_plans').value = JSON.stringify(selectedPlans);
+            document.getElementById('form_operator').value = document.getElementById('operator').value;
+            document.getElementById('form_fidelity').value = document.getElementById('fidelity').value;
+            document.getElementById('form_commercial_terms').value = document.getElementById('commercial_terms').value;
+            
+            document.getElementById('printForm').submit();
+        }
+    </script>
 </body>
 </html>
